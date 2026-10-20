@@ -72,6 +72,7 @@ import org.nrg.containers.services.DockerServerService;
 import org.nrg.containers.services.DockerService;
 import org.nrg.containers.utils.ContainerServicePermissionUtils;
 import org.nrg.containers.utils.ContainerUtils;
+import org.nrg.containers.utils.KubernetesVolMntSubPathResolver;
 import org.nrg.framework.exceptions.NotFoundException;
 import org.nrg.xdat.preferences.SiteConfigPreferences;
 import org.nrg.xdat.security.helpers.Permissions;
@@ -290,6 +291,8 @@ public class CommandResolutionServiceImpl implements CommandResolutionService {
         private String archivePvcName = null;
         private String buildPvcName = null;
 
+        private Boolean enableIndividualMounts = false;
+
         private String archivePathTranslation;
 
         private String buildPathTranslation;
@@ -317,11 +320,13 @@ public class CommandResolutionServiceImpl implements CommandResolutionService {
                 pathTranslationContainerHostPrefix = dockerServer.pathTranslationDockerPrefix();
                 if (StringUtils.isNotBlank(dockerServer.combinedPvcName())) {
                     archivePvcName = dockerServer.combinedPvcName();
+                    enableIndividualMounts = dockerServer.enableIndividualMounts();
                     buildPvcName = dockerServer.combinedPvcName();
                     retrievePvcPathTranslations(dockerServer);
                 } else if (StringUtils.isNotBlank(dockerServer.buildPvcName()) && StringUtils.isNotBlank(dockerServer.archivePvcName())) {
                     archivePvcName = dockerServer.archivePvcName();
                     buildPvcName = dockerServer.buildPvcName();
+                    enableIndividualMounts = dockerServer.enableIndividualMounts();
                     retrievePvcPathTranslations(dockerServer);
                 }
             } catch (NotFoundException e) {
@@ -2628,7 +2633,31 @@ public class CommandResolutionServiceImpl implements CommandResolutionService {
             if (isBuildMount && StringUtils.isNotBlank(buildPvcName)) {
                 mountPathOnContainerHost = getMountContainerHostPath(mountPath, buildPathTranslation, "");
             } else if (!isBuildMount && StringUtils.isNotBlank(archivePvcName)){
-                mountPathOnContainerHost = getMountContainerHostPath(mountPath, archivePathTranslation, "");
+         
+                // When enableIndividualMounts is true, we use a dynamic resolver to handle complex storage paths.
+                // The KubernetesVolMntSubPathResolver translates the mount path into the actual storage subpath,
+                // which is then used to construct the final container host mount path.
+                // When false, we skip the resolver and directly translate the mount path using the simple 
+                // path translation method.
+                if (Boolean.TRUE.equals(enableIndividualMounts)) { 
+
+                    KubernetesVolMntSubPathResolver kubernetesVolMntSubPathResolver = KubernetesVolMntSubPathResolver.INSTANCE;
+
+                    try {
+                        kubernetesVolMntSubPathResolver.init(archivePathTranslation);
+                    } catch (Exception e) {
+                        throw new CommandResolutionException(
+                                "Could not resolve archive path translation " + archivePathTranslation, e);
+                    }
+                    String subPath = kubernetesVolMntSubPathResolver.get(mountPath);
+                    mountPathOnContainerHost = getMountContainerHostPath(subPath, archivePathTranslation, "");
+
+                } else { 
+                    mountPathOnContainerHost = getMountContainerHostPath(mountPath, archivePathTranslation,
+                            "");
+
+                }
+
             }else {
                 mountPathOnContainerHost = getMountContainerHostPath(mountPath, pathTranslationXnatPrefix, pathTranslationContainerHostPrefix);
             }

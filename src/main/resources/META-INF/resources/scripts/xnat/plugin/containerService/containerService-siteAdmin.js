@@ -450,6 +450,12 @@ XNAT.plugin.containerService.assignProjectlauncher = assignProjectlauncher = get
                             ]),
                             spawn('div.pvc-type-settings.split', [
                                 spawn('p.divider', '<strong>Archive and Build Path Translations (Optional)</strong><br> Use these settings to resolve differences between your XNAT archive and build mount points and the Server mount points for your XNAT data that is mounted within two PVCs.'),
+                                XNAT.ui.panel.input.switchbox({
+                                    id: 'enable_individual_mounts',
+                                    name: 'enable-individual-mounts',
+                                    label: 'Enable individual mount points for each project',
+                                    value: 'false'
+                                }),
                                 XNAT.ui.panel.input.text({
                                     id: 'archive_path_translation',
                                     name: 'archive-path-translation',

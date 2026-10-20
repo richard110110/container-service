@@ -30,6 +30,7 @@ public class DockerServerEntity extends AbstractHibernateEntity {
     private String buildDirCleanupTime = DockerServerBase.DEFAULT_BUILD_DIR_CLEANUP_TIME;
     private String gpuVendor;
     private String archivePvcName;
+    private Boolean enableIndividualMounts;
     private String buildPvcName;
     private String combinedPvcName;
     private String archivePathTranslation;
@@ -60,6 +61,7 @@ public class DockerServerEntity extends AbstractHibernateEntity {
         this.buildDirCleanupTime = dockerServer.buildDirCleanupTime();
         this.gpuVendor = dockerServer.gpuVendor();
         this.archivePvcName = dockerServer.archivePvcName();
+        this.enableIndividualMounts = dockerServer.enableIndividualMounts();
         this.buildPvcName = dockerServer.buildPvcName();
         this.combinedPvcName = dockerServer.combinedPvcName();
         this.archivePathTranslation = dockerServer.archivePathTranslation();
@@ -364,6 +366,15 @@ public class DockerServerEntity extends AbstractHibernateEntity {
 
     public void setArchivePvcName(String archivePvcName) { this.archivePvcName = archivePvcName; }
 
+    @Column(columnDefinition = "boolean default false")
+    public Boolean isEnableIndividualMounts() { 
+        return enableIndividualMounts; 
+    }
+
+    public void setEnableIndividualMounts(Boolean enableIndividualMounts) { 
+        this.enableIndividualMounts = enableIndividualMounts; 
+    }
+    
     public String getBuildPvcName() { return buildPvcName; }
 
     public void setBuildPvcName(String buildPvcName) { this.buildPvcName = buildPvcName; }
@@ -451,6 +462,7 @@ public class DockerServerEntity extends AbstractHibernateEntity {
                 Objects.equals(this.statusEmailEnabled, that.statusEmailEnabled) &&
                 Objects.equals(this.gpuVendor, that.gpuVendor) &&
                 Objects.equals(this.archivePvcName, that.archivePvcName) &&
+                Objects.equals(this.enableIndividualMounts, that.enableIndividualMounts) &&
                 Objects.equals(this.buildPvcName, that.buildPvcName) &&
                 Objects.equals(this.combinedPvcName, that.combinedPvcName) &&
                 Objects.equals(this.archivePathTranslation, that.archivePathTranslation) &&
@@ -469,7 +481,7 @@ public class DockerServerEntity extends AbstractHibernateEntity {
     public int hashCode() {
         return Objects.hash(name, host, certPath, lastEventCheckTime, backend, pathTranslationXnatPrefix,
                 pathTranslationDockerPrefix, pullImagesOnXnatInit, containerUser, autoCleanup, swarmConstraints,
-                maxConcurrentFinalizingJobs, statusEmailEnabled, gpuVendor, archivePvcName, buildPvcName, combinedPvcName,
+                maxConcurrentFinalizingJobs, statusEmailEnabled, gpuVendor, archivePvcName, enableIndividualMounts, buildPvcName, combinedPvcName,
                 archivePathTranslation, buildPathTranslation, combinedPathTranslation, kubernetesTolerations,
                 buildDirCleanupEnabled, buildDirRetainDaysCompleted, buildDirRetainDaysFailed,
                 buildDirRetainDaysKilled, buildDirCleanupTime);

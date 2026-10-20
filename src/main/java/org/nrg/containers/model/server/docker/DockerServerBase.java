@@ -105,6 +105,9 @@ public abstract class DockerServerBase implements Serializable {
     @JsonProperty("archive-pvc-name")
     @Nullable
     public abstract String archivePvcName();
+    
+    @JsonProperty("enable-individual-mounts")
+    public abstract Boolean enableIndividualMounts();
 
     @JsonProperty("build-pvc-name")
     @Nullable
@@ -175,6 +178,7 @@ public abstract class DockerServerBase implements Serializable {
                                           @JsonProperty("status-email-enabled") final boolean statusEmailEnabled,
                                           @JsonProperty("gpu-vendor") final String gpuVendor,
                                           @JsonProperty("archive-pvc-name") final String archivePvcName,
+                                          @JsonProperty("enable-individual-mounts") final Boolean enableIndividualMounts,
                                           @JsonProperty("build-pvc-name") final String buildPvcName,
                                           @JsonProperty("combined-pvc-name") final String combinedPvcName,
                                           @JsonProperty("archive-path-translation") final String archivePathTranslation,
@@ -193,7 +197,7 @@ public abstract class DockerServerBase implements Serializable {
             }
             return create(id, name, host, certPath, backend, null, pathTranslationXnatPrefix,
                     pathTranslationDockerPrefix, pullImagesOnXnatInit, containerUser, autoCleanup, swarmConstraints,
-                    maxConcurrentFinalizingJobs, statusEmailEnabled, gpuVendor, archivePvcName, buildPvcName, combinedPvcName,
+                    maxConcurrentFinalizingJobs, statusEmailEnabled, gpuVendor, archivePvcName, enableIndividualMounts, buildPvcName, combinedPvcName,
                     archivePathTranslation, buildPathTranslation, combinedPathTranslation, kubernetesTolerations,
                     buildDirCleanupEnabled, buildDirRetainDaysCompleted, buildDirRetainDaysFailed,
                     buildDirRetainDaysKilled, buildDirCleanupTime);
@@ -223,6 +227,7 @@ public abstract class DockerServerBase implements Serializable {
                                           final Boolean statusEmailEnabled,
                                           final String gpuVendor,
                                           final String archivePvcName,
+                                          final Boolean enableIndividualMounts,
                                           final String buildPvcName,
                                           final String combinedPvcName,
                                           final String archivePathTranslation,
@@ -260,6 +265,7 @@ public abstract class DockerServerBase implements Serializable {
                             ? DEFAULT_BUILD_DIR_CLEANUP_TIME : buildDirCleanupTime.trim())
                     .gpuVendor(gpuVendor)
                     .archivePvcName(archivePvcName)
+                    .enableIndividualMounts(enableIndividualMounts == null || enableIndividualMounts)
                     .buildPvcName(buildPvcName)
                     .combinedPvcName(combinedPvcName)
                     .archivePathTranslation(archivePathTranslation)
@@ -294,6 +300,7 @@ public abstract class DockerServerBase implements Serializable {
                     dockerServerEntity.isStatusEmailEnabled(),
                     dockerServerEntity.getGpuVendor(),
                     dockerServerEntity.getArchivePvcName(),
+                    dockerServerEntity.isEnableIndividualMounts(),
                     dockerServerEntity.getBuildPvcName(),
                     dockerServerEntity.getCombinedPvcName(),
                     dockerServerEntity.getArchivePathTranslation(),
@@ -325,6 +332,7 @@ public abstract class DockerServerBase implements Serializable {
                     true,
                     null,
                     null,
+                    false,
                     null,
                     null,
                     null,
@@ -358,6 +366,7 @@ public abstract class DockerServerBase implements Serializable {
                             this.statusEmailEnabled(),
                             this.gpuVendor(),
                             this.archivePvcName(),
+                            this.enableIndividualMounts(),
                             this.buildPvcName(),
                             this.combinedPvcName(),
                             this.archivePathTranslation(),
@@ -397,6 +406,7 @@ public abstract class DockerServerBase implements Serializable {
                     .buildDirCleanupTime(DEFAULT_BUILD_DIR_CLEANUP_TIME)
                     .gpuVendor(null)
                     .archivePvcName(null)
+                    .enableIndividualMounts(false)
                     .buildPvcName(null)
                     .combinedPvcName(null)
                     .archivePathTranslation(null)
@@ -520,6 +530,7 @@ public abstract class DockerServerBase implements Serializable {
             public abstract Builder buildDirCleanupTime(String buildDirCleanupTime);
             public abstract Builder gpuVendor(String gpuVendor);
             public abstract Builder archivePvcName(String archivePvcName);
+            public abstract Builder enableIndividualMounts(Boolean enableIndividualMounts);
             public abstract Builder buildPvcName(String buildPvcName);
             public abstract Builder combinedPvcName(String combinedPvcName);
             public abstract Builder archivePathTranslation(String archivePathTranslation);
@@ -556,6 +567,7 @@ public abstract class DockerServerBase implements Serializable {
                                                   @JsonProperty("status-email-enabled") final boolean statusEmailEnabled,
                                                   @JsonProperty("gpu-vendor") final String gpuVendor,
                                                   @JsonProperty("archive-pvc-name") final String archivePvcName,
+                                                  @JsonProperty("enable-individual-mounts") final Boolean enableIndividualMounts,
                                                   @JsonProperty("build-pvc-name") final String buildPvcName,
                                                   @JsonProperty("combined-pvc-name") final String combinedPvcName,
                                                   @JsonProperty("archive-path-translation") final String archivePathTranslation,
@@ -575,7 +587,7 @@ public abstract class DockerServerBase implements Serializable {
             return create(id, name, host, certPath, backend, new Date(0),
                     pathTranslationXnatPrefix, pathTranslationDockerPrefix, pullImagesOnXnatInit,
                     user, autoCleanup, swarmConstraints, maxConcurrentFinalizingJobs, statusEmailEnabled,
-                    gpuVendor, archivePvcName, buildPvcName, combinedPvcName, archivePathTranslation, buildPathTranslation,
+                    gpuVendor, archivePvcName, enableIndividualMounts, buildPvcName, combinedPvcName, archivePathTranslation, buildPathTranslation,
                     combinedPathTranslation, kubernetesTolerations, buildDirCleanupEnabled,
                     buildDirRetainDaysCompleted, buildDirRetainDaysFailed, buildDirRetainDaysKilled,
                     buildDirCleanupTime, ping);
@@ -597,6 +609,7 @@ public abstract class DockerServerBase implements Serializable {
                                                   final Boolean statusEmailEnabled,
                                                   final String gpuVendor,
                                                   final String archivePvcName,
+                                                  final Boolean enableIndividualMounts,
                                                   final String buildPvcName,
                                                   final String combinedPvcName,
                                                   final String archivePathTranslation,
@@ -626,6 +639,7 @@ public abstract class DockerServerBase implements Serializable {
                     .statusEmailEnabled(statusEmailEnabled == null || statusEmailEnabled)
                     .gpuVendor(gpuVendor)
                     .archivePvcName(archivePvcName)
+                    .enableIndividualMounts(enableIndividualMounts == null || enableIndividualMounts)
                     .buildPvcName(buildPvcName)
                     .combinedPvcName(combinedPvcName)
                     .archivePathTranslation(archivePathTranslation)
@@ -664,6 +678,7 @@ public abstract class DockerServerBase implements Serializable {
                     dockerServer.statusEmailEnabled(),
                     dockerServer.gpuVendor(),
                     dockerServer.archivePvcName(),
+                    dockerServer.enableIndividualMounts(),
                     dockerServer.buildPvcName(),
                     dockerServer.combinedPvcName(),
                     dockerServer.archivePathTranslation(),
@@ -703,6 +718,7 @@ public abstract class DockerServerBase implements Serializable {
                     .buildDirCleanupTime(DEFAULT_BUILD_DIR_CLEANUP_TIME)
                     .gpuVendor(null)
                     .archivePvcName(null)
+                    .enableIndividualMounts(false)
                     .buildPvcName(null)
                     .combinedPvcName(null)
                     .archivePathTranslation(null)
@@ -741,6 +757,7 @@ public abstract class DockerServerBase implements Serializable {
             public abstract Builder buildDirCleanupTime(String buildDirCleanupTime);
             public abstract Builder gpuVendor(String gpuVendor);
             public abstract Builder archivePvcName(String archivePvcName);
+            public abstract Builder enableIndividualMounts(Boolean enableIndividualMounts);
             public abstract Builder buildPvcName(String buildPvcName);
             public abstract Builder combinedPvcName(String combinedPvcName);
             public abstract Builder archivePathTranslation(String archivePathTranslation);
@@ -896,6 +913,7 @@ public abstract class DockerServerBase implements Serializable {
                 Objects.equals(this.statusEmailEnabled(), that.statusEmailEnabled()) &&
                 Objects.equals(this.gpuVendor(), that.gpuVendor()) &&
                 Objects.equals(this.archivePvcName(), that.archivePvcName()) &&
+                Objects.equals(this.enableIndividualMounts(), that.enableIndividualMounts()) &&
                 Objects.equals(this.buildPvcName(), that.buildPvcName()) &&
                 Objects.equals(this.combinedPvcName(), that.combinedPvcName()) &&
                 Objects.equals(this.archivePathTranslation(), that.archivePathTranslation()) &&
@@ -914,7 +932,7 @@ public abstract class DockerServerBase implements Serializable {
         return Objects.hash(name(), host(), certPath(), backend(),
                 pathTranslationXnatPrefix(), pathTranslationDockerPrefix(), pullImagesOnXnatInit(),
                 containerUser(), autoCleanup(), swarmConstraints(), maxConcurrentFinalizingJobs(),
-                statusEmailEnabled(), gpuVendor(), archivePvcName(), buildPvcName(), combinedPvcName(),
+                statusEmailEnabled(), gpuVendor(), archivePvcName(), enableIndividualMounts(), buildPvcName(), combinedPvcName(),
                 archivePathTranslation(), buildPathTranslation(), combinedPathTranslation(),
                 kubernetesTolerations(), buildDirCleanupEnabled(), buildDirRetainDaysCompleted(),
                 buildDirRetainDaysFailed(), buildDirRetainDaysKilled(), buildDirCleanupTime());
